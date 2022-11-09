@@ -1,7 +1,8 @@
 import shutil
 from typing import List
-from fastapi import APIRouter, UploadFile, File, Form
-from schemas import UploadVideo
+from fastapi import APIRouter, UploadFile, File, Form, Request
+from schemas import UploadVideo, GetVideo, User, Message
+from fastapi.responses import JSONResponse
 
 video_router = APIRouter()
 
@@ -15,7 +16,7 @@ async def root(title: str = Form(...), description: str =  Form(...), file: Uplo
     return {'file_name': file.filename, "info": info}
 
 
-@video_router.post('/img')
+@video_router.post('/img', status_code=201)
 async def upload_image(files: List[UploadFile] = File(...)):
     for img in files:
         with open(f'{img.filename}', 'wb') as buffer:
@@ -24,17 +25,16 @@ async def upload_image(files: List[UploadFile] = File(...)):
     return {'file_name': 'Good'}
 
 
-@video_router.post("/info")
-async def info_set(info: UploadVideo):
-    return info
+@video_router.get("/video", response_model=GetVideo, responses={404: {'model': Message}})
+async def get_video():
+    user = {'id': 25, 'name': 'Pipec'}
+    video = {'title': 'Test', 'description': 'Description'}
+    info = GetVideo(user=user, video=video)
+    # return info
+    return JSONResponse(status_code=200, content=info.dict())
 
 
-
-@video_router.get("/info")
-async def info_get():
-    title = 'Test'
-    desc = 'Description'
-    return UploadVideo(title=title, description=desc)
-
-
-
+@video_router.get("/test")
+async def get_test(req: Request):
+    print(req)
+    return {}
