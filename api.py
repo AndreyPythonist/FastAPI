@@ -3,7 +3,7 @@ from typing import List
 from fastapi import APIRouter, UploadFile, File, Form, Request
 from schemas import UploadVideo, GetVideo, User, Message
 from fastapi.responses import JSONResponse
-
+from models import Video
 video_router = APIRouter()
 
 
@@ -25,6 +25,12 @@ async def upload_image(files: List[UploadFile] = File(...)):
     return {'file_name': 'Good'}
 
 
+@video_router.post('/video')
+async def create_video(video: Video):
+    await video.save()
+    return video
+
+
 @video_router.get("/video", response_model=GetVideo, responses={404: {'model': Message}})
 async def get_video():
     user = {'id': 25, 'name': 'Pipec'}
@@ -32,11 +38,4 @@ async def get_video():
     info = GetVideo(user=user, video=video)
     # return info
     return JSONResponse(status_code=200, content=info.dict())
-
-
-@video_router.get("/test")
-async def get_test(req: Request):
-    print(req)
-    return {}
-
 
